@@ -75,6 +75,21 @@ def test_bs_greeks():
     print("  ✓ Greeks are in valid ranges")
 
 
+def test_implied_vol_recovery():
+    bs = BlackScholes(s0=100.0, k=105.0, T=1.0, r=0.05, sigma=0.2)
+    market_price = bs.call_price()
+    implied = bs.implied_vol(market_price, option_type="call")
+    assert implied is not None, "Implied vol should be found for a valid price"
+    assert abs(implied - 0.2) < 1e-3, f"Expected ~0.2, got {implied}"
+    print(f"  ✓ Implied vol recovered: {implied:.5f}")
+
+
+def test_implied_vol_out_of_range():
+    bs = BlackScholes(s0=100.0, k=105.0, T=1.0, r=0.05, sigma=0.2)
+    assert bs.implied_vol(1000.0) is None, "Impossible price should return None"
+    print("  ✓ Out-of-range price returns None")
+
+
 if __name__ == "__main__":
     test_gbm_shape()
     test_gbm_antithetic()
@@ -82,4 +97,6 @@ if __name__ == "__main__":
     test_put_call_parity()
     test_var_is_negative()
     test_bs_greeks()
+    test_implied_vol_recovery()
+    test_implied_vol_out_of_range()
     print("\nAll Monte Carlo tests passed!")
