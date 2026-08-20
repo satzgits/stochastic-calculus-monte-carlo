@@ -90,6 +90,19 @@ def test_implied_vol_out_of_range():
     print("  ✓ Out-of-range price returns None")
 
 
+def test_max_drawdown_and_win_rate():
+    s0, k, T, r, sigma = 100.0, 105.0, 1.0, 0.05, 0.3
+    gbm = GeometricBrownianMotion(mu=r, sigma=sigma, s0=s0)
+    paths = gbm.simulate(T=T, N=10000, M=252, seed=42)
+    risk = RiskMetrics(paths)
+    assert risk.max_drawdown() <= 0, "Max drawdown should be non-positive"
+    assert risk.mean_max_drawdown() <= 0, "Mean max drawdown should be non-positive"
+    assert risk.mean_max_drawdown() >= risk.max_drawdown(), "Mean DD should be above worst-case DD"
+    assert 0 <= risk.win_rate() <= 1, "Win rate should be a probability"
+    assert "max_drawdown" in risk.summary()
+    print("  \u2713 Max drawdown and win rate are valid")
+
+
 if __name__ == "__main__":
     test_gbm_shape()
     test_gbm_antithetic()
@@ -99,4 +112,5 @@ if __name__ == "__main__":
     test_bs_greeks()
     test_implied_vol_recovery()
     test_implied_vol_out_of_range()
+    test_max_drawdown_and_win_rate()
     print("\nAll Monte Carlo tests passed!")

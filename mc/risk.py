@@ -24,6 +24,19 @@ class RiskMetrics:
     def probability_of_loss(self):
         return np.mean(self.returns < 0)
 
+    def max_drawdown(self):
+        peak = np.maximum.accumulate(self.paths, axis=1)
+        drawdown = (self.paths - peak) / peak
+        return np.min(drawdown)
+
+    def mean_max_drawdown(self):
+        peak = np.maximum.accumulate(self.paths, axis=1)
+        drawdown = (self.paths - peak) / peak
+        return np.mean(np.min(drawdown, axis=1))
+
+    def win_rate(self):
+        return np.mean(self.terminal > self.s0)
+
     def summary(self):
         var = self.value_at_risk()
         cvar = self.conditional_var()
@@ -32,5 +45,8 @@ class RiskMetrics:
             "CVaR": cvar,
             "expected_terminal": self.expected_value(),
             "prob_loss": self.probability_of_loss(),
-            "terminal_std": np.std(self.terminal, ddof=1)
+            "terminal_std": np.std(self.terminal, ddof=1),
+            "max_drawdown": self.max_drawdown(),
+            "mean_max_drawdown": self.mean_max_drawdown(),
+            "win_rate": self.win_rate()
         }
