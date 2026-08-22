@@ -25,6 +25,23 @@ class GeometricBrownianMotion:
         return paths
 
     @staticmethod
+    def estimate_params(paths, T=1.0, M=252):
+        """Estimate (mu, sigma) of a GBM from simulated paths.
+
+        For a geometric Brownian motion, the log returns are
+            log(S_t/M_(t-1)) = (mu - sigma^2/2) * dt + sigma * sqrt(dt) * Z
+        so we recover sigma from the standard deviation of log returns and mu by
+        adding back the (sigma^2/2) term. This is the standard calibration used
+        when fitting real market data to a GBM.
+        """
+        dt = T / M
+        log_returns = np.diff(np.log(paths), axis=1)          # (N, M) log returns
+        sigma_hat = float(np.std(log_returns, ddof=1) / np.sqrt(dt))
+        mean_lr = float(np.mean(log_returns))
+        mu_hat = mean_lr / dt + 0.5 * sigma_hat ** 2
+        return mu_hat, sigma_hat
+
+    @staticmethod
     def simulate_antithetic(mu=0.05, sigma=0.2, s0=100.0, T=1.0, N=10000, M=252, seed=None):
         if seed is not None:
             np.random.seed(seed)

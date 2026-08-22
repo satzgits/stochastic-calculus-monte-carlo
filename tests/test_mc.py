@@ -23,6 +23,16 @@ def test_gbm_antithetic():
     print("  ✓ Antithetic variates shape")
 
 
+def test_gbm_estimate_params():
+    mu, sigma = 0.08, 0.25
+    gbm = GeometricBrownianMotion(mu=mu, sigma=sigma)
+    paths = gbm.simulate(T=1.0, N=50000, M=252, seed=1)
+    mu_hat, sigma_hat = GeometricBrownianMotion.estimate_params(paths)
+    assert abs(mu_hat - mu) < 0.02, f"mu estimate {mu_hat:.4f} too far from {mu}"
+    assert abs(sigma_hat - sigma) < 0.01, f"sigma estimate {sigma_hat:.4f} too far from {sigma}"
+    print("  ✓ GBM parameter calibration recovers mu and sigma")
+
+
 def test_mc_vs_bs():
     s0, k, T, r, sigma = 100.0, 105.0, 1.0, 0.05, 0.2
     gbm = GeometricBrownianMotion(mu=r, sigma=sigma, s0=s0)
@@ -106,6 +116,7 @@ def test_max_drawdown_and_win_rate():
 if __name__ == "__main__":
     test_gbm_shape()
     test_gbm_antithetic()
+    test_gbm_estimate_params()
     test_mc_vs_bs()
     test_put_call_parity()
     test_var_is_negative()
